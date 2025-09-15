@@ -1,5 +1,6 @@
 package school.sorokin.javacore.spring_core_homework_base.Services;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import school.sorokin.javacore.spring_core_homework_base.Entity.Account;
@@ -33,6 +34,7 @@ public class AccountService {
     }
 
     public Account accountDeposit(Long id, BigDecimal deposit) {
+
         if(deposit.compareTo(BigDecimal.ZERO) <= 0){
             throw new AccountDepositException("Введите значение больше нуля");
         }
@@ -87,7 +89,7 @@ public class AccountService {
     }
 
     public void accountClose(Long id) {
-        Account account = findAccountById(id);
+            Account account = findAccountById(id);
         List<Account> closeAc = allAccounts.stream().filter(ac -> ac.getUserId().equals(account.getUserId()))
                 .sorted(Comparator.comparing(Account::getId)).collect(Collectors.toList());
 
