@@ -44,6 +44,9 @@ public class AccountService {
     }
 
     public Account accountWithdraw(Long id, BigDecimal deposit) {
+        if(deposit.compareTo(BigDecimal.ZERO) <= 0){
+            throw new AccountDepositException("Введите значение больше нуля");
+        }
         Account accountWithdraw = findAccountById(id);
         if (accountWithdraw.getMoneyAmount().compareTo(deposit) >= 0) {
             accountWithdraw.setMoneyAmount(accountWithdraw.getMoneyAmount().subtract(deposit));
@@ -54,6 +57,9 @@ public class AccountService {
     }
 
     public void accountTransfer(Long from, Long to, BigDecimal sum) {
+        if(sum.compareTo(BigDecimal.ZERO) <= 0){
+            throw new AccountDepositException("Введите значение больше нуля");
+        }
         Account accountFrom = findAccountById(from);
         Account accountTo = findAccountById(to);
         if (accountFrom.getUserId().equals(accountTo.getUserId())) {
