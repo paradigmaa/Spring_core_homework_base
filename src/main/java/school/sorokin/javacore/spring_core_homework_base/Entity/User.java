@@ -1,14 +1,23 @@
 package school.sorokin.javacore.spring_core_homework_base.Entity;
 
+import jakarta.persistence.*;
+
 import java.util.ArrayList;
 import java.util.List;
 
 
+@Entity
+@Table(name = "user")
 public class User {
-    private final Long id;
 
-    private final String login;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
+    @Column(name = "login")
+    private String login;
+
+    @OneToMany(mappedBy = "user_Id")
     private List<Account> accountList;
 
     public Long getId() {
@@ -27,6 +36,10 @@ public class User {
         this.id = id;
         this.login = login;
         this.accountList = new ArrayList<>(accountList);
+
+    }
+
+    public User() {
 
     }
 
