@@ -1,6 +1,10 @@
 package school.sorokin.javacore.spring_core_homework_base.Configuration;
 
 import org.hibernate.SessionFactory;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
+import school.sorokin.javacore.spring_core_homework_base.Entity.Account;
 
 public class HibernateConfiguration {
     public SessionFactory sessionFactory(){

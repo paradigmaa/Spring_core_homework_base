@@ -17,8 +17,16 @@ public class User {
     @Column(name = "login")
     private String login;
 
-    @OneToMany(mappedBy = "user_Id")
+    @OneToMany(mappedBy = "user")
     private List<Account> accountList;
+
+
+    public User(String login) {
+        this.login = login;
+    }
+
+    public User() {
+    }
 
     public Long getId() {
         return id;
@@ -28,33 +36,23 @@ public class User {
         return login;
     }
 
+    public void setLogin(String login) {
+        this.login = login;
+    }
+
     public List<Account> getAccountList() {
         return accountList;
     }
 
-    public User(Long id, String login, List<Account> accountList) {
-        this.id = id;
-        this.login = login;
-        this.accountList = new ArrayList<>(accountList);
-
+    public void setAccountList(List<Account> accountList) {
+        this.accountList = accountList;
     }
 
-    public User() {
-
-    }
-
-    public User(Long id, String login) {
-        this.id = id;
-        this.login = login;
-        this.accountList = new ArrayList<>();
-    }
-
-    public void addAccountList(Account account) {
-        accountList.add(account);
-    }
-
-    public void removeAccount(Account account) {
-        accountList.remove(account);
+    public void addAccountList(Account account){
+        if(account != null){
+            this.accountList.add(account);
+            account.setUser(this);
+        }
     }
 
     @Override

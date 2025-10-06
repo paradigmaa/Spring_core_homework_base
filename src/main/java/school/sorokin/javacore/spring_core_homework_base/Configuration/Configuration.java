@@ -1,5 +1,6 @@
 package school.sorokin.javacore.spring_core_homework_base.Configuration;
 
+import org.hibernate.SessionFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.PropertySource;
 
@@ -13,4 +14,5 @@ public class Configuration {
     public Scanner scanner(){
         return new Scanner(System.in);
     }
+
 }

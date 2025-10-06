@@ -1,111 +1,97 @@
 package school.sorokin.javacore.spring_core_homework_base.Services;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import school.sorokin.javacore.spring_core_homework_base.Entity.Account;
-import school.sorokin.javacore.spring_core_homework_base.Exception.AccountDepositException;
-import school.sorokin.javacore.spring_core_homework_base.Exception.AccountWithdrawException;
-import school.sorokin.javacore.spring_core_homework_base.Exception.FindAccountByIdException;
-import school.sorokin.javacore.spring_core_homework_base.Exception.TransferFromAccounException;
+import school.sorokin.javacore.spring_core_homework_base.Entity.User;
+import school.sorokin.javacore.spring_core_homework_base.Exception.TransferFromAccountException;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 
 @Service
 public class AccountService {
-    private final List<Account> allAccounts = new ArrayList<>();
-    private Long idIncrement = 1L;
     @Value("${account.moneyAmount}")
     private BigDecimal defaultAmount;
     @Value("${account.commissionPayment}")
     private BigDecimal commissionPayment;
+    private final SessionFactory sessionFactory;
 
-
-    public Account createdAccount(Long userId) {
-        Account account = new Account(idIncrement++, userId, defaultAmount);
-        allAccounts.add(account);
-        return account;
+    public AccountService(SessionFactory sessionFactory) {
+        this.sessionFactory = sessionFactory;
     }
 
-    public Account accountDeposit(Long id, BigDecimal deposit) {
-
-        if(deposit.compareTo(BigDecimal.ZERO) <= 0){
-            throw new AccountDepositException("Введите значение больше нуля");
-        }
-        Account accountDeposit = findAccountById(id);
-        accountDeposit.setMoneyAmount(accountDeposit.getMoneyAmount().add(deposit));
-        return accountDeposit;
+    public Account createdAccount(User user) {
+        Session session = sessionFactory.openSession();
+        session.beginTransaction();
+        Account newAccount = new Account(user, defaultAmount);
+        user.addAccountList(newAccount);
+        session.getTransaction().commit();
+        session.close();
+        return newAccount;
     }
 
-    public Account accountWithdraw(Long id, BigDecimal deposit) {
-        if(deposit.compareTo(BigDecimal.ZERO) <= 0){
-            throw new AccountDepositException("Введите значение больше нуля");
+    public void accountDeposit(Long id, BigDecimal deposit) {
+        Transaction transaction = null;
+        try (Session session = sessionFactory.openSession()) {
+            transaction = session.getTransaction();
+            transaction.begin();
+            Account accountDeposit = findAccountById(id);
+            accountDeposit.setMoneyAmount(accountDeposit.getMoneyAmount().add(deposit));
+            session.getTransaction().commit();
+        } catch (Exception e) {
+            if (transaction != null && transaction.isActive()) {
+                transaction.rollback();
+            }
+            throw e;
         }
-        Account accountWithdraw = findAccountById(id);
-        if (accountWithdraw.getMoneyAmount().compareTo(deposit) >= 0) {
-            accountWithdraw.setMoneyAmount(accountWithdraw.getMoneyAmount().subtract(deposit));
-        } else {
-            throw new AccountWithdrawException("На счету недостаточно средств для этой операции");
+    }
+
+    public void accountWithdraw(Long id, BigDecimal deposit) {
+        try (Session session = sessionFactory.openSession()) {
+            Account accountDeposit = findAccountById(id);
+            accountDeposit.setMoneyAmount(accountDeposit.getMoneyAmount().subtract(deposit));
         }
-        return accountWithdraw;
     }
 
     public void accountTransfer(Long from, Long to, BigDecimal sum) {
-        if(sum.compareTo(BigDecimal.ZERO) <= 0){
-            throw new AccountDepositException("Введите значение больше нуля");
+        try (Session session = sessionFactory.openSession()) {
+            Account fromAccount = findAccountById(from);
+            Account toAccount = findAccountById(to);
+            fromAccount.setMoneyAmount(fromAccount.getMoneyAmount().subtract(sum));
+            toAccount.setMoneyAmount(toAccount.getMoneyAmount().add(sum));
         }
-        Account accountFrom = findAccountById(from);
-        Account accountTo = findAccountById(to);
-        if (accountFrom.getUserId().equals(accountTo.getUserId())) {
-            if (accountFrom.getMoneyAmount().compareTo(sum) >= 0) {
-                accountFrom.setMoneyAmount(accountFrom.getMoneyAmount().subtract(sum));
-                accountTo.setMoneyAmount(accountTo.getMoneyAmount().add(sum));
-                System.out.println("Транзация между своими счетами прошла успешно");
-            }else {
-                throw new TransferFromAccounException("Недостаточно средств для перевода между своими счетами");
-            }
 
-        } else {
-            BigDecimal percent = sum.multiply(commissionPayment).divide(BigDecimal.valueOf(100));
-            if (accountFrom.getMoneyAmount().compareTo(sum.add(percent)) >= 0) {
-                accountFrom.setMoneyAmount(accountFrom.getMoneyAmount().subtract(sum.add(percent)));
-                accountTo.setMoneyAmount(accountTo.getMoneyAmount().add(sum));
-                System.out.println("Транзакция между чужими счетами прошла успешно, комиссия: " + percent);
-            }else {
-                throw new TransferFromAccounException("Недостаточно средств для перевода на чужой счёт(комиссия 1,5%)");
-            }
-        }
     }
 
 
     public Account findAccountById(Long id) {
-        Optional<Account> account = allAccounts.stream().filter(ac -> ac.getId()
-                .equals(id)).findAny();
-        if (account.isPresent()) {
-            return account.get();
-        } else {
-            throw new FindAccountByIdException("Такого аккаунта не существует");
-        }
+        Session session = sessionFactory.openSession();
+        Account findAccount = session.find(Account.class, id);
+        session.close();
+        return findAccount;
     }
 
     public void accountClose(Long id) {
+        try (Session session = sessionFactory.openSession()) {
+            session.beginTransaction();
             Account account = findAccountById(id);
-        List<Account> closeAc = allAccounts.stream().filter(ac -> ac.getUserId().equals(account.getUserId()))
-                .sorted(Comparator.comparing(Account::getId)).collect(Collectors.toList());
+            User user = account.getUser();
+            if (user.getAccountList().size() >= 2) {
+                Account transferAc = user.getAccountList().getFirst();
+                transferAc.setMoneyAmount(transferAc.getMoneyAmount().add(account.getMoneyAmount()));
+                account.setUser(null);
+                user.getAccountList().remove(account);
+                session.remove(account);
+            } else {
+                throw new TransferFromAccountException("У пользователя всего 1 аккаунт, закрытие невозможно");
+            }
+            session.getTransaction().commit();
+        } catch (Exception e) {
 
-        if(closeAc.size() == 1){
-            throw new IllegalStateException("Нельзя закрыть последний аккаунт пользователя");
         }
-        else if (closeAc.size() > 1 && closeAc.getLast().getMoneyAmount().compareTo(BigDecimal.ZERO) > 0) {
-            accountTransfer(account.getId(), closeAc.get(0).getId(), account.getMoneyAmount());
-        }
-        closeAc.remove(account);
-        allAccounts.remove(account);
     }
 }

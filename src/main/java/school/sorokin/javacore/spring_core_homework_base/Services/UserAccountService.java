@@ -21,28 +21,25 @@ public class UserAccountService {
         this.accountService = accountService;
     }
 
-    public User createUserAndAccount(String login) {
-        User user = userService.createUser(login);
-        Account account = accountService.createdAccount(user.getId());
-        user.addAccountList(account);
-        return user;
+    public void createUserAndDefaultAccount(User user) {
+        User newUser = userService.createUser(user);
+        accountService.createdAccount(newUser);
     }
 
     public void getAllUsers() {
         userService.getAllUsers();
     }
 
-    public void createAccount(Long idUser) {
-        User user = userService.findUserById(idUser);
-        Account newAccount = accountService.createdAccount(user.getId());
-        user.addAccountList(newAccount);
+    public void createAccount(Long userId) {
+        User user = userService.findUserById(userId);
+        accountService.createdAccount(user);
     }
 
     public void closeAccount(Long accountId) {
-        Account account = accountService.findAccountById(accountId);
-        User user = userService.findUserById(account.getUserId());
-        accountService.accountClose(account.getId());
-        user.removeAccount(account);
+        Account removeAccount = accountService.findAccountById(accountId);
+        User user = userService.findUserById(removeAccount.getUser().getId());
+        accountService.accountClose(removeAccount.getId());
+
     }
 
     public void depositAccount(Long id, BigDecimal deposit) {
