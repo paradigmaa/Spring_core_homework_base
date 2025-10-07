@@ -2,6 +2,7 @@ package school.sorokin.javacore.spring_core_homework_base.Services;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import school.sorokin.javacore.spring_core_homework_base.Entity.User;
@@ -19,12 +20,16 @@ public class UserService {
     }
 
     public User createUser(User user) {
-        Session session = sessionFactory.openSession();
-        session.beginTransaction();
-        session.persist(user);
-        session.getTransaction().commit();
-        session.close();
-        return user;
+        Transaction transaction = null;
+        try(Session session = sessionFactory.openSession()) {
+            transaction = session.getTransaction();
+            transaction.begin();
+            session.beginTransaction();
+            session.persist(user);
+            transaction.commit();
+            session.close();
+            return user;
+        }
     };
 
     public User findUserById(Long id) {
