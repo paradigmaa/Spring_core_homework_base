@@ -29,13 +29,14 @@ public class AccountService {
     }
 
     public Account createdAccount(User user) {
-        Session session = sessionFactory.openSession();
-        session.beginTransaction();
-        Account newAccount = new Account(user, defaultAmount);
-        user.addAccountList(newAccount);
-        session.getTransaction().commit();
-        session.close();
-        return newAccount;
+        try (Session session = sessionFactory.openSession()) {
+            session.beginTransaction();
+            Account newAccount = new Account(user, defaultAmount);
+            user.addAccountList(newAccount);
+            session.getTransaction().commit();
+            session.close();
+            return newAccount;
+        }
     }
 
     public void accountDeposit(Long id, BigDecimal deposit) {

@@ -21,28 +21,35 @@ public class UserService {
 
     public User createUser(User user) {
         Transaction transaction = null;
-        try(Session session = sessionFactory.openSession()) {
+        try (Session session = sessionFactory.openSession()) {
             transaction = session.getTransaction();
             transaction.begin();
-            session.beginTransaction();
             session.persist(user);
             transaction.commit();
-            session.close();
             return user;
+        } catch (Exception e) {
+            if (transaction != null && transaction.isActive()) {
+                transaction.rollback();
+            }
+            throw e;
         }
-    };
-
-    public User findUserById(Long id) {
-        Session session = sessionFactory.openSession();
-        User finedUser = session.find(User.class, id);
-        session.close();
-        return finedUser;
     }
 
-    public void getAllUsers() {
-        Session session = sessionFactory.openSession();
-        List<User>users = session.createQuery("select s from User s",User.class).list();
-        session.close();
+    ;
+
+    public User findUserById(Long id) {
+        try (Session session = sessionFactory.openSession()) {
+            User finedUser = session.find(User.class, id);
+            session.close();
+            return finedUser;
+        }
+    }
+
+    public List<User> getAllUsers() {
+        try (Session session = sessionFactory.openSession()) {
+            List<User> users = session.createQuery("select s from User s", User.class).list();
+            return users;
+        }
     }
 
 }

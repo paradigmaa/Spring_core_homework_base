@@ -7,7 +7,7 @@ import java.util.List;
 
 
 @Entity
-@Table(name = "user")
+@Table(name = "users")
 public class User {
 
     @Id
@@ -18,7 +18,7 @@ public class User {
     private String login;
 
     @OneToMany(mappedBy = "user")
-    private List<Account> accountList;
+    private List<Account> accountList = new ArrayList<>();
 
 
     public User(String login) {
