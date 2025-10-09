@@ -24,10 +24,20 @@ public class CreateAnAccountForTheUseCommand implements OperationCommand {
     @Override
     public void execute() {
         System.out.println("Введите ID пользователя, для которого нужно создать новый аккаунт");
-        Long idUser = scanner.nextLong();
-        scanner.nextLine();
-        userAccountService.createAccount(idUser);
-        System.out.println("Аккаунт создан");
+        String input = scanner.nextLine();
+        if (input.trim().isEmpty()) {
+            throw new IllegalArgumentException("Строка не может быть пустой");
+        }
+        try {
+            Long idUser = Long.parseLong(input);
+            if (idUser < 0) {
+                throw new IllegalArgumentException("Id не может быть отрицательным");
+            }
+            userAccountService.createdAccountForUser(idUser);
+            System.out.println("Новый аккаунт для указанного пользователя создан");
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Для продолжения введите число");
+        }
     }
 
     @Override

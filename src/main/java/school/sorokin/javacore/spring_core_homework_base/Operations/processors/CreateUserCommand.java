@@ -27,8 +27,12 @@ public class CreateUserCommand implements OperationCommand {
     public void execute() {
         System.out.println("Введите логин для создания пользователя");
         String login = scanner.nextLine();
+        if (login.trim().isEmpty()) {
+            throw new IllegalStateException("Введите корректное имя пользователя");
+        }
         userAccountService.createUserAndDefaultAccount(new User(login));
         System.out.println("Пользователь и базовый аккаунт созданы");
+
     }
 
     @Override

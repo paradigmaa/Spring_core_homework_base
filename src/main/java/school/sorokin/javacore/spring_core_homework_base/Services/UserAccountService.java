@@ -1,8 +1,9 @@
 package school.sorokin.javacore.spring_core_homework_base.Services;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
 import org.springframework.stereotype.Service;
-import school.sorokin.javacore.spring_core_homework_base.Entity.Account;
 import school.sorokin.javacore.spring_core_homework_base.Entity.User;
 
 import java.math.BigDecimal;
@@ -13,44 +14,134 @@ public class UserAccountService {
 
     private final UserService userService;
     private final AccountService accountService;
+    private final SessionFactory sessionFactory;
 
-
-    @Autowired
-    public UserAccountService(UserService userService, AccountService accountService) {
+    public UserAccountService(UserService userService, AccountService accountService, SessionFactory sessionFactory) {
         this.userService = userService;
         this.accountService = accountService;
+        this.sessionFactory = sessionFactory;
     }
 
     public void createUserAndDefaultAccount(User user) {
-        User newUser = userService.createUser(user);
-        accountService.createdAccount(newUser);
+        Transaction transaction = null;
+        Session session = sessionFactory.openSession();
+        try {
+            transaction = session.beginTransaction();
+            User newUser = userService.createdUser(user, session);
+            accountService.createdAccount(newUser, session);
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null && transaction.isActive()) {
+                transaction.rollback();
+            }
+            throw e;
+        } finally {
+            if (session != null && session.isOpen()) {
+                session.close();
+            }
+        }
     }
 
-    public void getAllUsers() {
-        userService.getAllUsers();
+    public void showAllUsers() {
+        try (Session session = sessionFactory.openSession()) {
+            userService.getAllUsers(session);
+        }
     }
 
-    public void createAccount(Long userId) {
-        User user = userService.findUserById(userId);
-        accountService.createdAccount(user);
+    public void createdAccountForUser(Long userId) {
+        Transaction transaction = null;
+        Session session = sessionFactory.openSession();
+        try {
+            transaction = session.beginTransaction();
+            accountService.createAccountForUser(userId, session);
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null && transaction.isActive()) {
+                transaction.rollback();
+            }
+            throw e;
+        } finally {
+            if (session != null && session.isOpen()) {
+                session.close();
+            }
+        }
     }
+
 
     public void closeAccount(Long accountId) {
-        Account removeAccount = accountService.findAccountById(accountId);
-        User user = userService.findUserById(removeAccount.getUser().getId());
-        accountService.accountClose(removeAccount.getId());
-
+        Session session = sessionFactory.openSession();
+        Transaction transaction = null;
+        try {
+            transaction = session.beginTransaction();
+            accountService.closeAccount(accountId, session);
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null && transaction.isActive()) {
+                transaction.rollback();
+            }
+            throw e;
+        } finally {
+            if (session != null && session.isOpen()) {
+                session.close();
+            }
+        }
     }
 
     public void depositAccount(Long id, BigDecimal deposit) {
-        accountService.accountDeposit(id, deposit);
+        Transaction transaction = null;
+        Session session = sessionFactory.openSession();
+        try {
+            transaction = session.beginTransaction();
+            accountService.accountDeposit(id, deposit, session);
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null && transaction.isActive()) {
+                transaction.rollback();
+            }
+            throw e;
+        }
+        if (session != null && session.isOpen()) {
+            session.close();
+        }
     }
 
     public void transfer(Long fromId, Long toId, BigDecimal deposit) {
-        accountService.accountTransfer(fromId, toId, deposit);
+        Transaction transaction = null;
+        Session session = sessionFactory.openSession();
+        try {
+            transaction = session.beginTransaction();
+            accountService.accountTransfer(fromId, toId, deposit, session);
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null && transaction.isActive()) {
+                transaction.rollback();
+            }
+            throw e;
+        } finally {
+            if (session != null && session.isOpen()) {
+                session.close();
+            }
+        }
     }
 
+
     public void withdrawAccount(Long accountId, BigDecimal withdraw) {
-        accountService.accountWithdraw(accountId, withdraw);
+        Transaction transaction = null;
+        Session session = sessionFactory.openSession();
+        try {
+            transaction = session.beginTransaction();
+            accountService.accountWithdraw(accountId, withdraw, session);
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null && transaction.isActive()) {
+                transaction.rollback();
+            }
+            throw e;
+        } finally {
+            if (session != null && session.isOpen()) {
+                session.close();
+            }
+        }
     }
+
 }

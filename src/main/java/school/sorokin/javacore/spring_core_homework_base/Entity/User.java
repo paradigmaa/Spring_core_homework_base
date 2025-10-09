@@ -17,7 +17,7 @@ public class User {
     @Column(name = "login")
     private String login;
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
     private List<Account> accountList = new ArrayList<>();
 
 
@@ -44,23 +44,13 @@ public class User {
         return accountList;
     }
 
-    public void setAccountList(List<Account> accountList) {
-        this.accountList = accountList;
-    }
-
-    public void addAccountList(Account account){
-        if(account != null){
-            this.accountList.add(account);
-            account.setUser(this);
-        }
-    }
 
     @Override
     public String toString() {
         return "User{" +
                 "id=" + id +
                 ", login='" + login + '\'' +
-                ", accountList=" + accountList +
+                ", accountList_size=" + accountList +
                 '}';
     }
 }
