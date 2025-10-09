@@ -20,7 +20,8 @@ public class ShowAllUserCommand implements OperationCommand {
 
     @Override
     public void execute() {
-        userAccountService.getAllUsers();
+        userAccountService.showAllUsers();
+
     }
 
     @Override

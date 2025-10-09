@@ -6,8 +6,6 @@ import school.sorokin.javacore.spring_core_homework_base.Exception.*;
 import school.sorokin.javacore.spring_core_homework_base.Operations.OperationCommand;
 import school.sorokin.javacore.spring_core_homework_base.Operations.ConsoleOperationType;
 
-import java.security.spec.RSAOtherPrimeInfo;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
@@ -63,8 +61,11 @@ public class OperationsConsoleListener implements Runnable {
                     System.out.println("Команда не найдена.");
                 }
 
+            } catch (IllegalStateException | UserCreatedException | AccountWithdrawException | AccountDepositException |
+                     CloseAccountException | TransferAccountException e) {
+                System.out.println(e.getMessage());
             } catch (NumberFormatException e) {
-                System.out.println("Пожалуйста, введите число от 1 до 7.");
+                System.out.println("Пожалуйста, введите целое число.");
             } catch (Exception e) {
                 System.out.println("Ошибка: " + e.getMessage());
             }

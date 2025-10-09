@@ -23,10 +23,20 @@ public class CloseAccountCommand implements OperationCommand {
     @Override
     public void execute() {
         System.out.println("Введите ID аккаунта, который хотите закрыть");
-        Long accountId = scanner.nextLong();
-        scanner.nextLine();
-        userAccountService.closeAccount(accountId);
-        System.out.println("Аккаунт закрыт");
+        String input = scanner.nextLine();
+        if (input.trim().isEmpty()) {
+            throw new IllegalArgumentException("Строка не может быть пустой");
+        }
+        try {
+            Long accountId = Long.parseLong(input);
+            if (accountId < 0) {
+                throw new IllegalArgumentException("Id не может быть отрицательным");
+            }
+            userAccountService.closeAccount(accountId);
+            System.out.println("Аккаунт закрыт");
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Для продолжения введите число");
+        }
     }
 
     @Override

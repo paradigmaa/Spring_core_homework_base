@@ -24,13 +24,33 @@ public class WithdrawAccountCommand implements OperationCommand {
     @Override
     public void execute() {
         System.out.println("Введите ID аккаунта");
-        Long id = scanner.nextLong();
-        scanner.nextLine();
-        System.out.println("Введите сумму, которую хотите снять со счета");
-        BigDecimal sum = scanner.nextBigDecimal();
-        scanner.nextLine();
-        userAccountService.withdrawAccount(id, sum);
-        System.out.println("Операция выполнена");
+        String input = scanner.nextLine();
+        if (input.trim().isEmpty()) {
+            throw new IllegalArgumentException("Строка не может быть пустой");
+        }
+        try {
+            Long id = Long.parseLong(input);
+            if (id < 0) {
+                throw new IllegalArgumentException("Id не может быть отрицательным");
+            }
+            System.out.println("Введите сумму, которую хотите cнять со счёта");
+            String sumInput = scanner.nextLine();
+            if (sumInput.trim().isEmpty()) {
+                throw new IllegalArgumentException("Сумма не может быть пустой");
+            }
+            try {
+                BigDecimal sum = new BigDecimal(sumInput.trim());
+                if (sum.compareTo(BigDecimal.ZERO) <= 0) {
+                    throw new IllegalArgumentException("Сумма снятия не может быть отрицательной");
+                }
+                userAccountService.withdrawAccount(id, sum);
+                System.out.println("Операция снятия выполнена");
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException("Введите корректную сумму");
+            }
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Для продолжения введите число");
+        }
     }
 
     @Override
