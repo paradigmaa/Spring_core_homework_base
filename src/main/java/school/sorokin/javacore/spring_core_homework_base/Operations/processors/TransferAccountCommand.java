@@ -3,6 +3,7 @@ package school.sorokin.javacore.spring_core_homework_base.Operations.processors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import school.sorokin.javacore.spring_core_homework_base.Operations.ConsoleOperationType;
+import school.sorokin.javacore.spring_core_homework_base.Operations.DefaultInputValidator;
 import school.sorokin.javacore.spring_core_homework_base.Operations.OperationCommand;
 import school.sorokin.javacore.spring_core_homework_base.Services.UserAccountService;
 
@@ -15,24 +16,31 @@ public class TransferAccountCommand implements OperationCommand {
 
     private final UserAccountService userAccountService;
 
-    @Autowired
-    public TransferAccountCommand(Scanner scanner, UserAccountService userAccountService) {
+    private final DefaultInputValidator defaultInputValidator;
+
+    public TransferAccountCommand(Scanner scanner, UserAccountService userAccountService, DefaultInputValidator defaultInputValidator) {
         this.scanner = scanner;
         this.userAccountService = userAccountService;
+        this.defaultInputValidator = defaultInputValidator;
     }
+
 
     @Override
     public void execute() {
         System.out.println("Введите ID аккаунта с которого хотите перевести деньги");
-        Long fromId = scanner.nextLong();
-        scanner.nextLine();
+        String inputFromId = scanner.nextLine();
+        Long fromId = defaultInputValidator.inputValidLong(inputFromId, "ID аккаунта отправителя");
+
         System.out.println("Введите ID аккаунта на который хотите перевести деньги");
-        Long toId = scanner.nextLong();
-        scanner.nextLine();
+        String inputToId = scanner.nextLine();
+        Long toId = defaultInputValidator.inputValidLong(inputToId, "ID аккаунта получателя");
+
         System.out.println("Введите сумму перевода");
-        BigDecimal sum = scanner.nextBigDecimal();
-        scanner.nextLine();
+        String sumInput = scanner.nextLine();
+        BigDecimal sum = defaultInputValidator.validateBigDecimalInput(sumInput, "Сумма перевода");
+
         userAccountService.transfer(fromId, toId, sum);
+        System.out.println("Перевод выполнен успешно");
     }
 
     @Override

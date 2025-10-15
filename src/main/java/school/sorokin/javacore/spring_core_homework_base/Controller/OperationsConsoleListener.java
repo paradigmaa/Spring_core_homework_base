@@ -6,8 +6,6 @@ import school.sorokin.javacore.spring_core_homework_base.Exception.*;
 import school.sorokin.javacore.spring_core_homework_base.Operations.OperationCommand;
 import school.sorokin.javacore.spring_core_homework_base.Operations.ConsoleOperationType;
 
-import java.security.spec.RSAOtherPrimeInfo;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
@@ -57,21 +55,24 @@ public class OperationsConsoleListener implements Runnable {
                 }
 
                 OperationCommand command = commandMap.get(type);
-                if (command != null) {
-                    command.execute();
-                } else {
+                if (command == null) {
                     System.out.println("Команда не найдена.");
+                } else {
+                    command.execute();
                 }
 
+            } catch (IllegalStateException | UserCreatedException | AccountWithdrawException | AccountDepositException |
+                     CloseAccountException | TransferAccountException e) {
+                System.out.println(e.getMessage());
             } catch (NumberFormatException e) {
-                System.out.println("Пожалуйста, введите число от 1 до 7.");
+                System.out.println("Пожалуйста, введите целое число.");
             } catch (Exception e) {
                 System.out.println("Ошибка: " + e.getMessage());
             }
         }
     }
 
-    public void print() {
+    private void print() {
         System.out.println("Выберите пункт из меню");
         System.out.println("1. USER_CREATE - Создание нового пользователя.");
         System.out.println("2. SHOW_ALL_USERS - Отображение списка всех пользователей.");

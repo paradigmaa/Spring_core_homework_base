@@ -1,46 +1,33 @@
 package school.sorokin.javacore.spring_core_homework_base.Services;
 
+import org.hibernate.Session;
 import org.springframework.stereotype.Service;
+import school.sorokin.javacore.spring_core_homework_base.Entity.Account;
 import school.sorokin.javacore.spring_core_homework_base.Entity.User;
-import school.sorokin.javacore.spring_core_homework_base.Exception.FindUserByIdException;
-import school.sorokin.javacore.spring_core_homework_base.Exception.UserIncorrectEnter;
+import school.sorokin.javacore.spring_core_homework_base.Exception.UserCreatedException;
 
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 
 @Service
 public class UserService {
-    private final Set<User> allUsers = new HashSet<>();
-    private final Set<String> logins = new TreeSet<>();
-    private Long idIncrement = 1L;
 
-    public User createUser(String login) {
-        if (login == null || login.trim().isEmpty()) {
-            throw new UserIncorrectEnter("Недопустимо пустое значение или поле состоящее из пробелов");
-        }
-        String checkLogin = login.trim();
-        if (!logins.contains(checkLogin)) {
-            logins.add(checkLogin);
+
+    public User createUser(User user, Session session) {
+        User us = (User) session.createQuery("SELECT u FROM User u WHERE u.login = :login")
+                .setParameter("login", user.getLogin()).uniqueResult();
+        if (us == null) {
+            throw new UserCreatedException("Такой пользователь уже есть");
         } else {
-            throw new UserIncorrectEnter("Такой логин уже существует");
+            session.persist(user);
+            return user;
         }
-        User newUser = new User(idIncrement++, checkLogin);
-        allUsers.add(newUser);
-        return newUser;
     }
 
-    public User findUserById(Long id) {
-        Optional<User> user = allUsers.stream().filter(n -> n.getId().equals(id)).findAny();
-        if (user.isPresent()) {
-            return user.get();
+
+        public List<User> getUsersWithPagination(int page, int size, Session session) {
+            return session.createQuery("FROM User u LEFT JOIN FETCH u.accounts", User.class)
+                    .setFirstResult((page - 1) * size)
+                    .setMaxResults(size)
+                    .getResultList();
         }
-        throw new FindUserByIdException("Такого пользователя нет");
     }
-
-    public void getAllUsers() {
-        System.out.println(allUsers.toString());
-    }
-
-}

@@ -1,11 +1,15 @@
 package school.sorokin.javacore.spring_core_homework_base.Services;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
 import org.springframework.stereotype.Service;
-import school.sorokin.javacore.spring_core_homework_base.Entity.Account;
 import school.sorokin.javacore.spring_core_homework_base.Entity.User;
 
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 
 @Service
@@ -13,47 +17,84 @@ public class UserAccountService {
 
     private final UserService userService;
     private final AccountService accountService;
+    private final SessionFactory sessionFactory;
 
-
-    @Autowired
-    public UserAccountService(UserService userService, AccountService accountService) {
+    public UserAccountService(UserService userService, AccountService accountService, SessionFactory sessionFactory) {
         this.userService = userService;
         this.accountService = accountService;
+        this.sessionFactory = sessionFactory;
     }
 
-    public User createUserAndAccount(String login) {
-        User user = userService.createUser(login);
-        Account account = accountService.createdAccount(user.getId());
-        user.addAccountList(account);
-        return user;
+    private <T> T executeInTransaction(Function<Session, T> function) {
+        Session session = sessionFactory.openSession();
+        Transaction transaction = null;
+        try {
+            transaction = session.beginTransaction();
+            T result = function.apply(session);
+            transaction.commit();
+            return result;
+        } catch (Exception e) {
+            if (transaction != null && transaction.isActive()) {
+                transaction.rollback();
+            }
+            throw e;
+        } finally {
+            if (session != null && session.isOpen()) {
+                session.close();
+            }
+        }
     }
 
-    public void getAllUsers() {
-        userService.getAllUsers();
+    private void executeInTransaction(Consumer<Session> consumer) {
+        executeInTransaction(session -> {
+            consumer.accept(session);
+            return null;
+        });
     }
 
-    public void createAccount(Long idUser) {
-        User user = userService.findUserById(idUser);
-        Account newAccount = accountService.createdAccount(user.getId());
-        user.addAccountList(newAccount);
+    public void createUserAndDefaultAccount(User user) {
+        executeInTransaction(session -> {
+            User newUser = userService.createUser(user, session);
+            accountService.createAccount(newUser, session);
+        });
     }
+
+    public void showAllUsers(int page) {
+        executeInTransaction(session -> {
+            List<User> users = userService.getUsersWithPagination(page,10, session);
+            users.forEach(System.out::println);
+        });
+    }
+
+    public void createdAccountForUser(Long userId) {
+        executeInTransaction(session -> {
+            accountService.createAccountForUser(userId, session);
+        });
+    }
+
 
     public void closeAccount(Long accountId) {
-        Account account = accountService.findAccountById(accountId);
-        User user = userService.findUserById(account.getUserId());
-        accountService.accountClose(account.getId());
-        user.removeAccount(account);
+        executeInTransaction(session -> {
+            accountService.closeAccount(accountId, session);
+        });
     }
 
     public void depositAccount(Long id, BigDecimal deposit) {
-        accountService.accountDeposit(id, deposit);
+        executeInTransaction(session -> {
+            accountService.depositAccount(id, deposit, session);
+        });
     }
 
     public void transfer(Long fromId, Long toId, BigDecimal deposit) {
-        accountService.accountTransfer(fromId, toId, deposit);
+        executeInTransaction(session -> {
+            accountService.transferAccount(fromId, toId, deposit, session);
+        });
     }
 
+
     public void withdrawAccount(Long accountId, BigDecimal withdraw) {
-        accountService.accountWithdraw(accountId, withdraw);
+        executeInTransaction(session -> {
+            accountService.withdrawAccount(accountId, withdraw, session);
+        });
     }
 }

@@ -1,8 +1,8 @@
 package school.sorokin.javacore.spring_core_homework_base.Operations.processors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import school.sorokin.javacore.spring_core_homework_base.Operations.ConsoleOperationType;
+import school.sorokin.javacore.spring_core_homework_base.Operations.DefaultInputValidator;
 import school.sorokin.javacore.spring_core_homework_base.Operations.OperationCommand;
 import school.sorokin.javacore.spring_core_homework_base.Services.UserAccountService;
 
@@ -15,19 +15,21 @@ public class CreateAnAccountForTheUseCommand implements OperationCommand {
 
     private final UserAccountService userAccountService;
 
-    @Autowired
-    public CreateAnAccountForTheUseCommand(Scanner scanner, UserAccountService userAccountService) {
+    private final DefaultInputValidator defaultInputValidator;
+
+    public CreateAnAccountForTheUseCommand(Scanner scanner, UserAccountService userAccountService, DefaultInputValidator defaultInputValidator) {
         this.scanner = scanner;
         this.userAccountService = userAccountService;
+        this.defaultInputValidator = defaultInputValidator;
     }
 
     @Override
     public void execute() {
         System.out.println("Введите ID пользователя, для которого нужно создать новый аккаунт");
-        Long idUser = scanner.nextLong();
-        scanner.nextLine();
-        userAccountService.createAccount(idUser);
-        System.out.println("Аккаунт создан");
+        String input = scanner.nextLine();
+        Long idUser = defaultInputValidator.inputValidLong(input, "Id пользователя для создания нового аккаунта");
+        userAccountService.createdAccountForUser(idUser);
+        System.out.println("Новый аккаунт для указанного пользователя создан");
     }
 
     @Override

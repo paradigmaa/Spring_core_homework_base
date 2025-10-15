@@ -1,26 +1,42 @@
 package school.sorokin.javacore.spring_core_homework_base.Entity;
 
+import jakarta.persistence.*;
+
 import java.math.BigDecimal;
+import java.util.List;
+
+@Entity
+@Table(name = "account")
 public class Account {
-    private final Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    private final Long userId;
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
+    @Column(name = "money_amount")
     private BigDecimal moneyAmount;
 
-    public Account(Long id, Long userId, BigDecimal moneyAmount) {
-        this.id = id;
-        this.userId = userId;
+    public Account(User user, BigDecimal moneyAmount) {
+        this.user = user;
         this.moneyAmount = moneyAmount;
+    }
+
+
+    public Account() {
+
     }
 
     public Long getId() {
         return id;
     }
 
-    public Long getUserId() {
-        return userId;
+    public User getUser() {
+        return user;
     }
+
 
     public BigDecimal getMoneyAmount() {
         return moneyAmount;
@@ -30,12 +46,11 @@ public class Account {
         this.moneyAmount = moneyAmount;
     }
 
-
     @Override
     public String toString() {
         return "Account{" +
                 "id=" + id +
-                ", userId=" + userId +
+                ", user=" + user +
                 ", moneyAmount=" + moneyAmount +
                 '}';
     }
