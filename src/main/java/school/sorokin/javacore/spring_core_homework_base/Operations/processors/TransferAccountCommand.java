@@ -16,56 +16,31 @@ public class TransferAccountCommand implements OperationCommand {
 
     private final UserAccountService userAccountService;
 
-    private final DefaultInputValidator defaultInputValidatorl;
+    private final DefaultInputValidator defaultInputValidator;
 
-    public TransferAccountCommand(Scanner scanner, UserAccountService userAccountService, DefaultInputValidator defaultInputValidatorl) {
+    public TransferAccountCommand(Scanner scanner, UserAccountService userAccountService, DefaultInputValidator defaultInputValidator) {
         this.scanner = scanner;
         this.userAccountService = userAccountService;
-        this.defaultInputValidatorl = defaultInputValidatorl;
+        this.defaultInputValidator = defaultInputValidator;
     }
+
 
     @Override
     public void execute() {
         System.out.println("Введите ID аккаунта с которого хотите перевести деньги");
         String inputFromId = scanner.nextLine();
-        if (inputFromId.trim().isEmpty()) {
-            throw new IllegalArgumentException("Строка отправителя не может быть пустой");
-        }
-        try {
-            Long fromId = Long.parseLong(inputFromId);
-            if (fromId < 0) {
-                throw new IllegalArgumentException("Id отправителя не может быть отрицательным");
-            }
-            System.out.println("Введите ID аккаунта на который хотите перевести деньги");
-            String inputToId = scanner.nextLine();
-            if (inputToId.trim().isEmpty()) {
-                throw new IllegalArgumentException("Строка получателя не может быть пустой");
-            }
-            try {
-                Long toId = Long.parseLong(inputToId);
-                if (toId < 0) {
-                    throw new IllegalArgumentException("ID получателя не может быть отрицательным");
-                }
-                System.out.println("Введите сумму перевода");
-                String sum = scanner.nextLine();
-                if (sum.trim().isEmpty()) {
-                    throw new IllegalArgumentException("Строка суммы не может быть пустой");
-                }
-                try {
-                    BigDecimal sumTotal = new BigDecimal(sum.trim());
-                    if (sumTotal.compareTo(BigDecimal.ZERO) < 0) {
-                        throw new IllegalArgumentException("Сумма перевода не может быть отрицательной");
-                    }
-                    userAccountService.transfer(fromId, toId, sumTotal);
-                } catch (NumberFormatException e) {
-                    throw new IllegalArgumentException("Введите корректную сумму");
-                }
-            } catch (NumberFormatException e) {
-                throw new IllegalArgumentException("Введите корректные данные получателя");
-            }
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Введите корректные данные отправителя");
-        }
+        Long fromId = defaultInputValidator.inputValidLong(inputFromId, "ID аккаунта отправителя");
+
+        System.out.println("Введите ID аккаунта на который хотите перевести деньги");
+        String inputToId = scanner.nextLine();
+        Long toId = defaultInputValidator.inputValidLong(inputToId, "ID аккаунта получателя");
+
+        System.out.println("Введите сумму перевода");
+        String sumInput = scanner.nextLine();
+        BigDecimal sum = defaultInputValidator.validateBigDecimalInput(sumInput, "Сумма перевода");
+
+        userAccountService.transfer(fromId, toId, sum);
+        System.out.println("Перевод выполнен успешно");
     }
 
     @Override

@@ -30,20 +30,16 @@ public class WithdrawAccountCommand implements OperationCommand {
     public void execute() {
         System.out.println("Введите ID аккаунта");
         String input = scanner.nextLine();
-        if (input.trim().isEmpty()) {
-            throw new IllegalArgumentException("Строка не может быть пустой");
-        }
-            Long id = defaultInputValidator.inputValidLong(input, "Id пользователя");
-            System.out.println("Введите сумму, которую хотите снять со счёта");
-            String sumInput = scanner.nextLine();
-            BigDecimal sum = defaultInputValidator.validateBigDecimalInput(sumInput, "Сумма снятия");
-            userAccountService.withdrawAccount(id, sum);
-            userAccountService.withdrawAccount(id, sum);
-            System.out.println("Операция снятия выполнена");
+        Long id = defaultInputValidator.inputValidLong(input, "Id пользователя");
+        System.out.println("Введите сумму, которую хотите снять со счёта");
+        String sumInput = scanner.nextLine();
+        BigDecimal sum = defaultInputValidator.validateBigDecimalInput(sumInput, "Сумма снятия");
+        userAccountService.withdrawAccount(id, sum);
+        System.out.println("Операция снятия выполнена");
     }
 
-        @Override
-        public ConsoleOperationType getOperationType () {
-            return ConsoleOperationType.ACCOUNT_WITHDRAW;
-        }
+    @Override
+    public ConsoleOperationType getOperationType() {
+        return ConsoleOperationType.ACCOUNT_WITHDRAW;
     }
+}

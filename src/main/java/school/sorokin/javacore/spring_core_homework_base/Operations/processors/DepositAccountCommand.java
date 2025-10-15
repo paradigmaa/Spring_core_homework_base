@@ -29,7 +29,6 @@ public class DepositAccountCommand implements OperationCommand {
     public void execute() {
         System.out.println("Введите ID аккаунта");
         String input = scanner.nextLine();
-
         Long id = defaultInputValidator.inputValidLong(input, "Id пользователя");
         System.out.println("Введите сумму, которую хотите положить на счёт");
         String sumInput = scanner.nextLine();
