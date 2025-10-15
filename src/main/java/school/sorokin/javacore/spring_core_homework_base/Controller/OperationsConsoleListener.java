@@ -55,10 +55,10 @@ public class OperationsConsoleListener implements Runnable {
                 }
 
                 OperationCommand command = commandMap.get(type);
-                if (command != null) {
-                    command.execute();
-                } else {
+                if (command == null) {
                     System.out.println("Команда не найдена.");
+                } else {
+                    command.execute();
                 }
 
             } catch (IllegalStateException | UserCreatedException | AccountWithdrawException | AccountDepositException |
@@ -72,7 +72,7 @@ public class OperationsConsoleListener implements Runnable {
         }
     }
 
-    public void print() {
+    private void print() {
         System.out.println("Выберите пункт из меню");
         System.out.println("1. USER_CREATE - Создание нового пользователя.");
         System.out.println("2. SHOW_ALL_USERS - Отображение списка всех пользователей.");

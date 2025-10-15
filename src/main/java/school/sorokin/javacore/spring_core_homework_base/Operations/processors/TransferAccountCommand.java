@@ -51,7 +51,7 @@ public class TransferAccountCommand implements OperationCommand {
                 try {
                     BigDecimal sumTotal = new BigDecimal(sum.trim());
                     if (sumTotal.compareTo(BigDecimal.ZERO) < 0) {
-                        System.out.println("Сумма перевода не может быть отрицательной");
+                        throw new IllegalArgumentException("Сумма перевода не может быть отрицательной");
                     }
                     userAccountService.transfer(fromId, toId, sumTotal);
                 } catch (NumberFormatException e) {

@@ -12,32 +12,22 @@ import java.util.*;
 public class UserService {
 
 
-    public User createdUser(User user, Session session) {
+    public User createUser(User user, Session session) {
         User us = (User) session.createQuery("SELECT u FROM User u WHERE u.login = :login")
                 .setParameter("login", user.getLogin()).uniqueResult();
         if (us == null) {
+            throw new UserCreatedException("Такой пользователь уже есть");
+        } else {
             session.persist(user);
             return user;
-        } else {
-            throw new UserCreatedException("Такой пользователь уже есть");
         }
     }
 
 
-    public void getAllUsers(Session session) {
-        List<User> users =
-                session.createQuery
-                        ("SELECT u FROM User u LEFT JOIN FETCH u.accountList", User.class).getResultList();
-        for (User u : users) {
-            System.out.println("__________________________\n" + "ID: " + u.getId() + " пользователь " + u.getLogin()
-                    + "\n__________________________");
-            for (Account account : u.getAccountList()) {
-                System.out.println("Список аккаунтов:\n" + "№ "
-                        + account.getId() + " баланс: "
-                        + account.getMoneyAmount());
-                System.out.println();
-            }
-            System.out.println();
+        public List<User> getUsersWithPagination(int page, int size, Session session) {
+            return session.createQuery("FROM User u LEFT JOIN FETCH u.accounts", User.class)
+                    .setFirstResult((page - 1) * size)
+                    .setMaxResults(size)
+                    .getResultList();
         }
     }
-}

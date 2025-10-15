@@ -6,7 +6,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 @Entity
-@Table(name = "Account")
+@Table(name = "account")
 public class Account {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -16,7 +16,7 @@ public class Account {
     @JoinColumn(name = "user_id")
     private User user;
 
-
+    @Column(name = "money_amount")
     private BigDecimal moneyAmount;
 
     public Account(User user, BigDecimal moneyAmount) {
@@ -24,9 +24,6 @@ public class Account {
         this.moneyAmount = moneyAmount;
     }
 
-    public Account(BigDecimal moneyAmount) {
-        this.moneyAmount = moneyAmount;
-    }
 
     public Account() {
 
@@ -40,9 +37,6 @@ public class Account {
         return user;
     }
 
-    public void setUser(User user) {
-        this.user = user;
-    }
 
     public BigDecimal getMoneyAmount() {
         return moneyAmount;
